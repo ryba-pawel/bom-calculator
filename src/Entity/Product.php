@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
@@ -17,11 +18,13 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['product:list'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Nazwa produktu jest wymagana.')]
     #[Assert\Length(max: 255)]
+    #[Groups(['product:list'])]
     private ?string $name = null;
 
     /** Marża w procentach, liczona od kosztu materiałów. */
@@ -32,6 +35,7 @@ class Product
         min: 0,
         max: 999.99,
     )]
+    #[Groups(['product:list'])]
     private ?string $marginPercent = null;
 
     /** @var Collection<int, BomItem> */
