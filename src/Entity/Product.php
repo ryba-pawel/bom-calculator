@@ -40,7 +40,7 @@ class Product
 
     /** @var Collection<int, BomItem> */
     #[ORM\OneToMany(targetEntity: BomItem::class, mappedBy: 'product', cascade: ['persist'], orphanRemoval: true)]
-    #[ORM\OrderBy(['id' => 'ASC'])]
+    #[ORM\OrderBy(['id' => \SortDirection::Ascending])]
     private Collection $bomItems;
 
     public function __construct()

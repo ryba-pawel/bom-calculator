@@ -34,7 +34,7 @@ final class BomItemType extends AbstractType
                 'placeholder' => '— wybierz materiał —',
                 'query_builder' => static fn (MaterialRepository $repository): QueryBuilder => $repository
                     ->createQueryBuilder('m')
-                    ->orderBy('m.name', 'ASC'),
+                    ->orderBy('m.name', \SortDirection::Ascending),
                 'choice_label' => fn (Material $material): string => sprintf(
                     '%s – %s / %s',
                     $material->getName(),

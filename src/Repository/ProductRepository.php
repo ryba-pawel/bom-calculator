@@ -27,7 +27,7 @@ class ProductRepository extends ServiceEntityRepository
         return $this->createWithBomQueryBuilder()
             ->where('p.id = :id')
             ->setParameter('id', $id)
-            ->orderBy('b.id', 'ASC')
+            ->orderBy('b.id', \SortDirection::Ascending)
             ->getQuery()
             ->getOneOrNullResult();
     }
@@ -38,8 +38,8 @@ class ProductRepository extends ServiceEntityRepository
     public function findAllWithBom(): array
     {
         return $this->createWithBomQueryBuilder()
-            ->orderBy('p.name', 'ASC')
-            ->addOrderBy('b.id', 'ASC')
+            ->orderBy('p.name', \SortDirection::Ascending)
+            ->addOrderBy('b.id', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
