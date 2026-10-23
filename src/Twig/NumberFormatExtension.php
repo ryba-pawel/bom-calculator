@@ -20,7 +20,7 @@ final class NumberFormatExtension
         return number_format((float) $amount, 2, ',', self::NBSP).self::NBSP.'zł';
     }
 
-    /** "2.500" → "2,5", "14.000" → "14" (bez zbędnych zer z kolumny DECIMAL) */
+    /** "2.500" → "2,5", "14.000" → "14", "1500.000" → "1 500" (bez zbędnych zer z kolumny DECIMAL) */
     #[AsTwigFilter('decimal')]
     public function formatDecimal(string|int|float|null $value): string
     {
@@ -30,6 +30,10 @@ final class NumberFormatExtension
             $value = rtrim(rtrim($value, '0'), '.');
         }
 
-        return str_replace('.', ',', $value);
+        [$integer, $fraction] = explode('.', $value, 2) + [1 => null];
+        // Grupowanie tysięcy jak w filtrze "pln" i w kalkulatorze JS (useGrouping: 'always')
+        $integer = (string) preg_replace('/\B(?=(\d{3})+(?!\d))/', self::NBSP, $integer);
+
+        return null === $fraction ? $integer : $integer.','.$fraction;
     }
 }
