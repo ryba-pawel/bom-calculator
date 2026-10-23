@@ -1,0 +1,7 @@
+{{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+    {{ form_widget(form) }}
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary">{{ button_label|default('Zapisz') }}</button>
+        <a href="{{ path('app_material_index') }}" class="btn btn-link">Anuluj</a>
+    </div>
+{{ form_end(form) }}

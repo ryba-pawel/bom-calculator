@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Produkty{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Produkty</h1>
+        <a href="{{ path('app_product_new') }}" class="btn btn-primary">+ Nowy produkt</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nazwa</th>
+                        <th class="text-end">Marża</th>
+                        <th class="text-end">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td><a href="{{ path('app_product_show', {id: product.id}) }}">{{ product.name }}</a></td>
+                        <td class="text-end">{{ product.marginPercent|decimal }}%</td>
+                        <td class="text-end text-nowrap">
+                            <a href="{{ path('app_product_edit', {id: product.id}) }}" class="btn btn-sm btn-outline-secondary">Edytuj</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-body-secondary py-4">Brak produktów – dodaj pierwszy.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

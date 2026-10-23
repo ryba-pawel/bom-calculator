@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Materiały{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Materiały</h1>
+        <a href="{{ path('app_material_new') }}" class="btn btn-primary">+ Nowy materiał</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nazwa</th>
+                        <th>Jednostka</th>
+                        <th class="text-end">Cena jednostkowa</th>
+                        <th class="text-end">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for material in materials %}
+                    <tr>
+                        <td><a href="{{ path('app_material_show', {id: material.id}) }}">{{ material.name }}</a></td>
+                        <td>{{ material.unit.value }}</td>
+                        <td class="text-end text-nowrap">{{ material.unitPrice|pln }} / {{ material.unit.value }}</td>
+                        <td class="text-end text-nowrap">
+                            <a href="{{ path('app_material_edit', {id: material.id}) }}" class="btn btn-sm btn-outline-secondary">Edytuj</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-body-secondary py-4">Brak materiałów – dodaj pierwszy.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

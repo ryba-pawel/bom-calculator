@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ material.name }}{% endblock %}
+
+{% block body %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_material_index') }}">Materiały</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ material.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm" style="max-width: 40rem">
+        <div class="card-body">
+            <h1 class="h4 card-title">{{ material.name }}</h1>
+            <dl class="row mb-0">
+                <dt class="col-sm-5">Jednostka</dt>
+                <dd class="col-sm-7">{{ material.unit.label }}</dd>
+                <dt class="col-sm-5">Cena jednostkowa</dt>
+                <dd class="col-sm-7">{{ material.unitPrice|pln }} / {{ material.unit.value }}</dd>
+            </dl>
+        </div>
+        <div class="card-footer d-flex gap-2">
+            <a href="{{ path('app_material_edit', {id: material.id}) }}" class="btn btn-outline-secondary">Edytuj</a>
+            {{ include('material/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

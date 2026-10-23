@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edycja: {{ product.name }}{% endblock %}
+
+{% block body %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_product_index') }}">Produkty</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_product_show', {id: product.id}) }}">{{ product.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edycja</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm" style="max-width: 40rem">
+        <div class="card-body">
+            <h1 class="h4 card-title mb-3">Edycja produktu</h1>
+            {{ include('product/_form.html.twig', {button_label: 'Zapisz zmiany', cancel_path: path('app_product_show', {id: product.id})}) }}
+        </div>
+        <div class="card-footer">
+            {{ include('product/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

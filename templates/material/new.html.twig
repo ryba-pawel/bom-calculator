@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nowy materiał{% endblock %}
+
+{% block body %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_material_index') }}">Materiały</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Nowy</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm" style="max-width: 40rem">
+        <div class="card-body">
+            <h1 class="h4 card-title mb-3">Nowy materiał</h1>
+            {{ include('material/_form.html.twig', {button_label: 'Dodaj materiał'}) }}
+        </div>
+    </div>
+{% endblock %}
