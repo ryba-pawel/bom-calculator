@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -23,15 +24,32 @@ class ProductRepository extends ServiceEntityRepository
      */
     public function findWithBom(int $id): ?Product
     {
-        return $this->createQueryBuilder('p')
-            ->leftJoin('p.bomItems', 'b')
-            ->addSelect('b')
-            ->leftJoin('b.material', 'm')
-            ->addSelect('m')
+        return $this->createWithBomQueryBuilder()
             ->where('p.id = :id')
             ->setParameter('id', $id)
             ->orderBy('b.id', 'ASC')
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @return list<Product>
+     */
+    public function findAllWithBom(): array
+    {
+        return $this->createWithBomQueryBuilder()
+            ->orderBy('p.name', 'ASC')
+            ->addOrderBy('b.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    private function createWithBomQueryBuilder(): QueryBuilder
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.bomItems', 'b')
+            ->addSelect('b')
+            ->leftJoin('b.material', 'm')
+            ->addSelect('m');
     }
 }

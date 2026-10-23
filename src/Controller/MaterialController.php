@@ -78,7 +78,7 @@ final class MaterialController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_material_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'app_material_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(Request $request, Material $material, BomItemRepository $bomItemRepository): Response
     {
         if (!$this->isCsrfTokenValid('delete'.$material->getId(), $request->getPayload()->getString('_token'))) {

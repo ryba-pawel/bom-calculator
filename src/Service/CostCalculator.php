@@ -38,6 +38,7 @@ final class CostCalculator
             $materialsCost = bcadd($materialsCost, $lineCost, self::MONEY_SCALE);
 
             $items[] = new CostLine(
+                bomItemId: $bomItem->getId(),
                 materialId: $material->getId(),
                 materialName: (string) $material->getName(),
                 unit: $material->getUnit()?->value ?? '',

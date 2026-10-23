@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\BomItem;
 use App\Entity\Product;
+use App\Form\BomItemType;
 use App\Form\ProductType;
 use App\Repository\ProductRepository;
+use App\Service\CostCalculator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,14 +22,16 @@ final class ProductController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ProductRepository $productRepository,
+        private readonly CostCalculator $costCalculator,
     ) {
     }
 
     #[Route(name: 'app_product_index', methods: ['GET'])]
-    public function index(ProductRepository $productRepository): Response
+    public function index(): Response
     {
         return $this->render('product/index.html.twig', [
-            'products' => $productRepository->findBy([], ['name' => 'ASC']),
+            'costs' => array_map($this->costCalculator->calculate(...), $this->productRepository->findAllWithBom()),
         ]);
     }
 
@@ -39,7 +45,7 @@ final class ProductController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->entityManager->persist($product);
             $this->entityManager->flush();
-            $this->addFlash('success', sprintf('Dodano produkt „%s”.', $product->getName()));
+            $this->addFlash('success', sprintf('Dodano produkt „%s”. Teraz uzupełnij jego BOM.', $product->getName()));
 
             return $this->redirectToRoute('app_product_show', ['id' => $product->getId()], Response::HTTP_SEE_OTHER);
         }
@@ -50,11 +56,31 @@ final class ProductController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_product_show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(Product $product): Response
+    /**
+     * Karta produktu: BOM, podsumowanie kosztów i formularz dodawania pozycji.
+     */
+    #[Route('/{id}', name: 'app_product_show', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function show(Request $request, int $id): Response
     {
+        $product = $this->productRepository->findWithBom($id)
+            ?? throw $this->createNotFoundException(sprintf('Produkt o id %d nie istnieje.', $id));
+
+        $bomItem = (new BomItem())->setProduct($product);
+        $form = $this->createForm(BomItemType::class, $bomItem);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $product->addBomItem($bomItem);
+            $this->entityManager->flush();
+            $this->addFlash('success', sprintf('Dodano do BOM: %s.', $bomItem->getMaterial()?->getName()));
+
+            return $this->redirectToRoute('app_product_show', ['id' => $id], Response::HTTP_SEE_OTHER);
+        }
+
         return $this->render('product/show.html.twig', [
             'product' => $product,
+            'cost' => $this->costCalculator->calculate($product),
+            'bom_form' => $form,
         ]);
     }
 
@@ -77,7 +103,7 @@ final class ProductController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_product_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[Route('/{id}/delete', name: 'app_product_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(Request $request, Product $product): Response
     {
         if (!$this->isCsrfTokenValid('delete'.$product->getId(), $request->getPayload()->getString('_token'))) {
@@ -91,5 +117,34 @@ final class ProductController extends AbstractController
         $this->addFlash('success', sprintf('Usunięto produkt „%s”.', $product->getName()));
 
         return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route(
+        '/{id}/bom/{bomItemId}/delete',
+        name: 'app_product_bom_item_delete',
+        requirements: ['id' => '\d+', 'bomItemId' => '\d+'],
+        methods: ['POST'],
+    )]
+    public function deleteBomItem(
+        Request $request,
+        Product $product,
+        #[MapEntity(id: 'bomItemId')] BomItem $bomItem,
+    ): Response {
+        if ($bomItem->getProduct() !== $product) {
+            throw $this->createNotFoundException('Ta pozycja nie należy do BOM tego produktu.');
+        }
+
+        if (!$this->isCsrfTokenValid('delete-bom-item'.$bomItem->getId(), $request->getPayload()->getString('_token'))) {
+            $this->addFlash('danger', 'Nieprawidłowy token formularza – spróbuj ponownie.');
+
+            return $this->redirectToRoute('app_product_show', ['id' => $product->getId()], Response::HTTP_SEE_OTHER);
+        }
+
+        // orphanRemoval na Product::$bomItems usuwa rekord przy flush()
+        $product->removeBomItem($bomItem);
+        $this->entityManager->flush();
+        $this->addFlash('success', sprintf('Usunięto z BOM: %s.', $bomItem->getMaterial()?->getName()));
+
+        return $this->redirectToRoute('app_product_show', ['id' => $product->getId()], Response::HTTP_SEE_OTHER);
     }
 }

@@ -10,6 +10,7 @@ namespace App\Dto;
 final readonly class CostLine
 {
     public function __construct(
+        public ?int $bomItemId,
         public ?int $materialId,
         public string $materialName,
         public string $unit,

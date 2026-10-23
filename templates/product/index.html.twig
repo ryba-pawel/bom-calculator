@@ -14,22 +14,29 @@
                 <thead class="table-light">
                     <tr>
                         <th>Nazwa</th>
+                        <th class="text-end">Pozycje BOM</th>
+                        <th class="text-end">Koszt materiałów</th>
                         <th class="text-end">Marża</th>
+                        <th class="text-end">Cena końcowa</th>
                         <th class="text-end">Akcje</th>
                     </tr>
                 </thead>
                 <tbody>
-                {% for product in products %}
+                {% for cost in costs %}
                     <tr>
-                        <td><a href="{{ path('app_product_show', {id: product.id}) }}">{{ product.name }}</a></td>
-                        <td class="text-end">{{ product.marginPercent|decimal }}%</td>
+                        <td><a href="{{ path('app_product_show', {id: cost.productId}) }}">{{ cost.productName }}</a></td>
+                        <td class="text-end">{{ cost.items|length }}</td>
+                        <td class="text-end text-nowrap">{{ cost.materialsCost|pln }}</td>
+                        <td class="text-end">{{ cost.marginPercent|decimal }}%</td>
+                        <td class="text-end text-nowrap fw-semibold">{{ cost.finalPrice|pln }}</td>
                         <td class="text-end text-nowrap">
-                            <a href="{{ path('app_product_edit', {id: product.id}) }}" class="btn btn-sm btn-outline-secondary">Edytuj</a>
+                            <a href="{{ path('app_product_show', {id: cost.productId}) }}" class="btn btn-sm btn-outline-primary">BOM</a>
+                            <a href="{{ path('app_product_edit', {id: cost.productId}) }}" class="btn btn-sm btn-outline-secondary">Edytuj</a>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="3" class="text-center text-body-secondary py-4">Brak produktów – dodaj pierwszy.</td>
+                        <td colspan="6" class="text-center text-body-secondary py-4">Brak produktów – dodaj pierwszy.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
