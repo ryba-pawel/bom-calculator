@@ -244,7 +244,9 @@ Gdy produkt nie istnieje, odpowiedź to `404 Not Found`:
 
 ## Możliwe kierunki rozwoju
 
-- Statyczna analiza (PHPStan) i CI (GitHub Actions) uruchamiające testy i CS.
-- Uwierzytelnianie (Symfony Security) i role, np. tylko odczyt dla handlowców.
-- Historia cen materiałów i kalkulacje „na dzień”.
-- Edycja ilości istniejącej pozycji BOM bez jej usuwania.
+Zaplanowane usprawnienia i znane problemy są opisane w zakładce
+[Issues](https://github.com/ryba-pawel/bom-calculator/issues), m.in. CI w GitHub Actions,
+PHPStan, edycja ilości pozycji BOM i pełne środowisko w Dockerze.
+
+Pomysły na dalszą przyszłość, jeszcze bez zgłoszeń: uwierzytelnianie (Symfony Security)
+z rolami oraz historia cen materiałów z kalkulacjami „na dzień”.
