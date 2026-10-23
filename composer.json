@@ -1,5 +1,6 @@
 {
     "type": "project",
+    "description": "Kalkulator kosztu produktu na podstawie BOM – Symfony 7, Doctrine, REST API",
     "license": "proprietary",
     "minimum-stability": "stable",
     "prefer-stable": true,
@@ -71,7 +72,10 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "test": "@php bin/phpunit",
+        "cs": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix"
     },
     "conflict": {
         "symfony/symfony": "*"
