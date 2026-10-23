@@ -7,8 +7,8 @@ services:
       MYSQL_PASSWORD: app
       MYSQL_ROOT_PASSWORD: root
     ports:
-      # Port 3309 na hoście, żeby nie kolidować z lokalnym MySQL na 3306
-      - "3309:3306"
+      # Port 3309 na hoście, żeby nie kolidować z lokalnym MySQL na 3306; tylko localhost (słabe hasła dev)
+      - "127.0.0.1:3309:3306"
     volumes:
       - database_data:/var/lib/mysql
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
