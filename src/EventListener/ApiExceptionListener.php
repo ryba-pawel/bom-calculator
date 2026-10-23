@@ -13,8 +13,10 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Błędy HTTP pod /api/ (np. 404 z routingu, 405) zwracamy jako JSON zamiast strony HTML.
+ * Priorytet poniżej 0: setResponse() zatrzymuje propagację, a wyjątek ma najpierw trafić
+ * do ErrorListener::logKernelException() i profilera (oba z priorytetem 0).
  */
-#[AsEventListener(event: KernelEvents::EXCEPTION)]
+#[AsEventListener(event: KernelEvents::EXCEPTION, priority: -10)]
 final class ApiExceptionListener
 {
     public function __invoke(ExceptionEvent $event): void

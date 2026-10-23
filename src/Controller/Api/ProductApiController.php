@@ -34,7 +34,8 @@ final class ProductApiController extends AbstractController
         );
     }
 
-    #[Route('/{id}/cost', name: 'api_product_cost', requirements: ['id' => '\d+'], methods: ['GET'])]
+    // Najwyżej 18 cyfr: dłuższe id nie mieści się w int i kończyło się TypeError (500) zamiast 404
+    #[Route('/{id}/cost', name: 'api_product_cost', requirements: ['id' => '\d{1,18}'], methods: ['GET'])]
     public function cost(int $id): JsonResponse
     {
         $product = $this->productRepository->findWithBom($id);

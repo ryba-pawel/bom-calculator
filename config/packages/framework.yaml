@@ -5,6 +5,13 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
+    # 404/405 to błędy klienta, nie aplikacji – logowane jako notice zamiast error
+    exceptions:
+        Symfony\Component\HttpKernel\Exception\NotFoundHttpException:
+            log_level: notice
+        Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException:
+            log_level: notice
+
     #esi: true
     #fragments: true
 

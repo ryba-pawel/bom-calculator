@@ -87,6 +87,15 @@ final class ProductApiTest extends WebTestCase
         self::assertSame(['error' => 'Not Found'], $this->decodeResponse());
     }
 
+    public function testCostEndpointReturnsJson404ForIdOverflowingInt(): void
+    {
+        $this->client->request('GET', '/api/products/99999999999999999999/cost');
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertResponseHeaderSame('Content-Type', 'application/json');
+        self::assertSame(['error' => 'Not Found'], $this->decodeResponse());
+    }
+
     public function testCostEndpointRejectsPost(): void
     {
         $product = $this->createProduct('Piaskownica', '30.00', []);
