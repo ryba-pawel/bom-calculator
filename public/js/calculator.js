@@ -25,6 +25,10 @@ async function fetchJson(url, signal) {
         throw new Error(data?.error ?? `Błąd serwera (HTTP ${response.status}).`);
     }
 
+    if (data === null) {
+        throw new Error('Nieprawidłowa odpowiedź serwera.');
+    }
+
     return data;
 }
 
@@ -87,13 +91,19 @@ async function loadCost(productId) {
         return;
     }
 
-    pendingRequest = new AbortController();
+    const controller = new AbortController();
+    pendingRequest = controller;
     showStatus('loading-template');
 
+    // signal.aborted zamiast error.name: AbortError z response.json() jest połykany w fetchJson,
+    // a odpowiedź na przerwane żądanie nie może nadpisać wyniku nowego wyboru.
     try {
-        renderCost(await fetchJson(`${productsUrl}/${encodeURIComponent(productId)}/cost`, pendingRequest.signal));
+        const cost = await fetchJson(`${productsUrl}/${encodeURIComponent(productId)}/cost`, controller.signal);
+        if (!controller.signal.aborted) {
+            renderCost(cost);
+        }
     } catch (error) {
-        if (error.name !== 'AbortError') {
+        if (!controller.signal.aborted) {
             showStatus('error-template', error.message);
         }
     }
@@ -109,6 +119,7 @@ async function loadProducts() {
         );
         select.disabled = products.length === 0;
     } catch (error) {
+        select.replaceChildren(new Option('Nie udało się wczytać produktów', ''));
         showStatus('error-template', error.message);
         return;
     }
