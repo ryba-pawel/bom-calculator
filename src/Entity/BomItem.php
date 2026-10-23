@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(name: 'uniq_bom_item_product_material', columns: ['product_id', 'material_id'])]
 #[UniqueEntity(
     fields: ['product', 'material'],
-    message: 'Ten materiał jest już w BOM tego produktu – zmień ilość istniejącej pozycji.',
+    message: 'Ten materiał jest już w BOM tego produktu – usuń istniejącą pozycję i dodaj ją ponownie z nową ilością.',
     errorPath: 'material',
 )]
 class BomItem
@@ -40,6 +40,7 @@ class BomItem
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 3)]
     #[Assert\NotBlank(message: 'Ilość jest wymagana.')]
     #[Assert\Positive(message: 'Ilość musi być większa od zera.')]
+    #[Assert\LessThanOrEqual(value: '9999999.999', message: 'Ilość nie może przekraczać 9 999 999,999.')]
     private ?string $quantity = null;
 
     public function getId(): ?int

@@ -31,6 +31,7 @@ class Material
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotBlank(message: 'Cena jednostkowa jest wymagana.')]
     #[Assert\Positive(message: 'Cena jednostkowa musi być większa od zera.')]
+    #[Assert\LessThanOrEqual(value: '99999999.99', message: 'Cena jednostkowa nie może przekraczać 99 999 999,99 zł.')]
     private ?string $unitPrice = null;
 
     public function getId(): ?int
