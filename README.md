@@ -29,7 +29,7 @@ przeładowania strony.
 | Obszar         | Technologia                                                       |
 |----------------|-------------------------------------------------------------------|
 | Backend        | PHP 8.2+ (rozwijane na 8.4), Symfony 7.4 LTS                      |
-| Baza danych    | MySQL 8.4 w Dockerze (`docker-compose.yml`)                       |
+| Środowisko     | Docker Compose: FrankenPHP (aplikacja) + MySQL 8.4                |
 | ORM            | Doctrine ORM 3 + Doctrine Migrations, DoctrineFixturesBundle      |
 | Widoki         | Twig, Bootstrap 5.3 (CDN), Symfony Form + Validator               |
 | API            | Symfony Serializer (grupy serializacji, DTO)                      |
@@ -59,7 +59,8 @@ przeładowania strony.
 ## Struktura katalogów
 
 ```
-├── docker-compose.yml             # MySQL 8.4 (port 3309)
+├── docker-compose.yml             # aplikacja (FrankenPHP, port 8088) + MySQL 8.4 (port 3309)
+├── docker/app/                    # obraz aplikacji i skrypt startowy (migracje, fixtures)
 ├── docker/mysql/init.sql          # zakłada bazę testową bom_calculator_test
 ├── migrations/                    # migracje Doctrine
 ├── public/js/calculator.js        # strona /kalkulator (fetch + render tabeli)
@@ -84,29 +85,54 @@ przeładowania strony.
     └── Unit/Service/CostCalculatorTest.php
 ```
 
-## Uruchomienie krok po kroku
+## Uruchomienie
 
-### Wymagania
+### Opcja A: wszystko w Dockerze (wymagany tylko Docker)
 
-- PHP 8.2 lub nowszy z rozszerzeniami `pdo_mysql`, `bcmath`, `ctype`, `iconv`
+```bash
+git clone https://github.com/ryba-pawel/bom-calculator.git
+cd bom-calculator
+docker compose up -d --wait
+```
+
+Aplikacja: **http://127.0.0.1:8088**. W Docker Desktop link jest przy kontenerze `app`
+(port `8088:80`).
+
+Pierwsze uruchomienie trwa kilka minut: Docker buduje obraz aplikacji (FrankenPHP),
+a kontener przy starcie instaluje zależności Composera, uruchamia migracje
+(także w bazie testowej) i przy pustej bazie ładuje dane przykładowe. Kod jest
+podmontowany do kontenera, więc zmiany w plikach widać od razu, bez przebudowy.
+
+Testy i konsola Symfony w kontenerze:
+
+```bash
+docker compose exec app composer test
+docker compose exec app php bin/console doctrine:fixtures:load -n   # przywraca dane przykładowe
+```
+
+Zatrzymanie: `docker compose down` (dane zostają), `docker compose down -v` (usuwa też bazę).
+
+### Opcja B: lokalne PHP + Symfony CLI
+
+Wymagania:
+
+- PHP 8.2 lub nowszy z rozszerzeniami `pdo_mysql`, `bcmath`, `intl`, `ctype`, `iconv`
 - [Composer](https://getcomposer.org/) 2
-- [Docker](https://www.docker.com/) z Docker Compose
+- [Docker](https://www.docker.com/) z Docker Compose (tylko dla MySQL)
 - [Symfony CLI](https://symfony.com/download) (na macOS: `brew install symfony-cli/tap/symfony-cli`)
-
-### Instalacja
 
 1. **Sklonuj repozytorium i zainstaluj zależności**
 
    ```bash
-   git clone <adres-repozytorium> bom-calculator
+   git clone https://github.com/ryba-pawel/bom-calculator.git
    cd bom-calculator
    composer install
    ```
 
-2. **Uruchom bazę danych MySQL**
+2. **Uruchom samą bazę danych MySQL**
 
    ```bash
-   docker compose up -d --wait
+   docker compose up -d --wait database
    ```
 
    MySQL nasłuchuje na porcie **3309** hosta (żeby nie kolidować z lokalnym MySQL
@@ -130,33 +156,29 @@ przeładowania strony.
    http://127.0.0.1:8000. Jeśli port jest zajęty, użyj np. `symfony serve -d --port=8001`.
    Zamiast Symfony CLI możesz użyć wbudowanego serwera PHP: `php -S 127.0.0.1:8000 -t public`.
 
-5. **Gotowe.** Najważniejsze adresy:
+5. **Testy**
 
-   | Strona                    | Adres                     |
-   |---------------------------|---------------------------|
-   | Produkty (strona główna)  | `/products`               |
-   | Materiały                 | `/materials`              |
-   | Kalkulator (fetch + API)  | `/kalkulator`             |
-   | API: lista produktów      | `/api/products`           |
-   | API: koszt produktu       | `/api/products/1/cost`    |
+   Baza testowa `bom_calculator_test` powstaje automatycznie przy pierwszym starcie
+   kontenera MySQL (`docker/mysql/init.sql`). Przed pierwszym uruchomieniem testów
+   utwórz w niej schemat, potem uruchom testy:
 
-### Testy
-
-Baza testowa `bom_calculator_test` powstaje automatycznie przy pierwszym starcie
-kontenera (`docker/mysql/init.sql`). Przed pierwszym uruchomieniem testów utwórz w niej schemat:
-
-```bash
-php bin/console --env=test doctrine:migrations:migrate -n
-```
-
-Uruchomienie testów:
-
-```bash
-composer test          # lub: php bin/phpunit
-```
+   ```bash
+   php bin/console --env=test doctrine:migrations:migrate -n
+   composer test          # lub: php bin/phpunit
+   ```
 
 Każdy test funkcjonalny działa w transakcji wycofywanej po teście (DAMA DoctrineTestBundle),
 więc baza testowa zostaje czysta.
+
+### Najważniejsze adresy
+
+| Strona                    | Adres                     |
+|---------------------------|---------------------------|
+| Produkty (strona główna)  | `/products`               |
+| Materiały                 | `/materials`              |
+| Kalkulator (fetch + API)  | `/kalkulator`             |
+| API: lista produktów      | `/api/products`           |
+| API: koszt produktu       | `/api/products/1/cost`    |
 
 ### Styl kodu
 
@@ -172,10 +194,12 @@ composer cs:fix        # automatyczna poprawa
 | GET    | `/api/products`             | Lista produktów (sortowana po nazwie)   | 200         |
 | GET    | `/api/products/{id}/cost`   | Rozbicie kosztów produktu               | 200, 404    |
 
+Przykłady zakładają uruchomienie w Dockerze (port 8088). Przy Symfony CLI użyj portu 8000.
+
 ### `GET /api/products`
 
 ```bash
-curl http://127.0.0.1:8000/api/products
+curl http://127.0.0.1:8088/api/products
 ```
 
 ```json
@@ -189,7 +213,7 @@ curl http://127.0.0.1:8000/api/products
 ### `GET /api/products/{id}/cost`
 
 ```bash
-curl http://127.0.0.1:8000/api/products/1/cost
+curl http://127.0.0.1:8088/api/products/1/cost
 ```
 
 Odpowiedź `200 OK` (lista `items` skrócona do 2 z 6 pozycji):

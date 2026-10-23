@@ -1,4 +1,29 @@
 services:
+  app:
+    build: ./docker/app
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      # Zwykłe HTTP na porcie 80, bez automatycznego HTTPS z Caddy
+      SERVER_NAME: ":80"
+      # W sieci Dockera baza jest dostępna pod nazwą serwisu, a nie pod 127.0.0.1:3309 z .env
+      DATABASE_URL: "mysql://app:app@database:3306/bom_calculator?serverVersion=8.4&charset=utf8mb4"
+    ports:
+      # Aplikacja pod http://127.0.0.1:8088 (link w Docker Desktop)
+      - "127.0.0.1:8088:80"
+    volumes:
+      - .:/app
+      # Osobny var/ (cache, logi), żeby nie mieszać go z cache PHP uruchamianego na hoście
+      - /app/var
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1/products"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      # Pierwszy start instaluje zależności Composera
+      start_period: 300s
+
   database:
     image: mysql:8.4
     environment:
