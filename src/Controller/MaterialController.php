@@ -62,6 +62,8 @@ final class MaterialController extends AbstractController
     #[Route('/{id}/edit', name: 'app_material_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function edit(Request $request, Material $material): Response
     {
+        // Nazwa sprzed handleRequest() – przy błędnym formularzu encja ma już wysłane (np. puste) dane
+        $materialName = $material->getName();
         $form = $this->createForm(MaterialType::class, $material);
         $form->handleRequest($request);
 
@@ -74,6 +76,7 @@ final class MaterialController extends AbstractController
 
         return $this->render('material/edit.html.twig', [
             'material' => $material,
+            'material_name' => $materialName,
             'form' => $form,
         ]);
     }
@@ -81,7 +84,7 @@ final class MaterialController extends AbstractController
     #[Route('/{id}/delete', name: 'app_material_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(Request $request, Material $material, BomItemRepository $bomItemRepository): Response
     {
-        if (!$this->isCsrfTokenValid('delete'.$material->getId(), $request->getPayload()->getString('_token'))) {
+        if (!$this->isCsrfTokenValid('delete-material'.$material->getId(), $request->getPayload()->getString('_token'))) {
             $this->addFlash('danger', 'Nieprawidłowy token formularza – spróbuj ponownie.');
 
             return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);

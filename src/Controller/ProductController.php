@@ -58,8 +58,9 @@ final class ProductController extends AbstractController
 
     /**
      * Karta produktu: BOM, podsumowanie kosztów i formularz dodawania pozycji.
+     * Id najwyżej 18 cyfr, żeby zawsze mieściło się w int (dłuższe dają 404 z routingu).
      */
-    #[Route('/{id}', name: 'app_product_show', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    #[Route('/{id}', name: 'app_product_show', requirements: ['id' => '\d{1,18}'], methods: ['GET', 'POST'])]
     public function show(Request $request, int $id): Response
     {
         $product = $this->productRepository->findWithBom($id)
@@ -87,6 +88,8 @@ final class ProductController extends AbstractController
     #[Route('/{id}/edit', name: 'app_product_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function edit(Request $request, Product $product): Response
     {
+        // Nazwa sprzed handleRequest() – przy błędnym formularzu encja ma już wysłane (np. puste) dane
+        $productName = $product->getName();
         $form = $this->createForm(ProductType::class, $product);
         $form->handleRequest($request);
 
@@ -99,6 +102,7 @@ final class ProductController extends AbstractController
 
         return $this->render('product/edit.html.twig', [
             'product' => $product,
+            'product_name' => $productName,
             'form' => $form,
         ]);
     }
@@ -106,7 +110,7 @@ final class ProductController extends AbstractController
     #[Route('/{id}/delete', name: 'app_product_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(Request $request, Product $product): Response
     {
-        if (!$this->isCsrfTokenValid('delete'.$product->getId(), $request->getPayload()->getString('_token'))) {
+        if (!$this->isCsrfTokenValid('delete-product'.$product->getId(), $request->getPayload()->getString('_token'))) {
             $this->addFlash('danger', 'Nieprawidłowy token formularza – spróbuj ponownie.');
 
             return $this->redirectToRoute('app_product_show', ['id' => $product->getId()], Response::HTTP_SEE_OTHER);
@@ -140,8 +144,8 @@ final class ProductController extends AbstractController
             return $this->redirectToRoute('app_product_show', ['id' => $product->getId()], Response::HTTP_SEE_OTHER);
         }
 
-        // orphanRemoval na Product::$bomItems usuwa rekord przy flush()
-        $product->removeBomItem($bomItem);
+        // Bez inicjalizacji całej kolekcji Product::$bomItems tylko po to, żeby usunąć jedną pozycję
+        $this->entityManager->remove($bomItem);
         $this->entityManager->flush();
         $this->addFlash('success', sprintf('Usunięto z BOM: %s.', $bomItem->getMaterial()?->getName()));
 

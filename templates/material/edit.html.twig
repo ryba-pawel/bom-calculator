@@ -1,12 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edycja: {{ material.name }}{% endblock %}
+{% block title %}Edycja: {{ material_name }}{% endblock %}
 
 {% block body %}
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ path('app_material_index') }}">Materiały</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_material_show', {id: material.id}) }}">{{ material.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_material_show', {id: material.id}) }}">{{ material_name }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">Edycja</li>
         </ol>
     </nav>

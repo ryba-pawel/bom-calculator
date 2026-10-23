@@ -1,12 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edycja: {{ product.name }}{% endblock %}
+{% block title %}Edycja: {{ product_name }}{% endblock %}
 
 {% block body %}
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ path('app_product_index') }}">Produkty</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('app_product_show', {id: product.id}) }}">{{ product.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_product_show', {id: product.id}) }}">{{ product_name }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">Edycja</li>
         </ol>
     </nav>
